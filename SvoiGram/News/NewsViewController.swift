@@ -34,7 +34,15 @@ struct Post: Decodable {
     }
 }
 
-class NewsViewController: UIViewController {
+protocol ProfileViewControllerDelegate: AnyObject {
+    func profileDidDismiss()
+}
+
+class NewsViewController: UIViewController, ProfileViewControllerDelegate {
+    
+    @IBOutlet weak var profileButton: UIButton!
+    
+    @IBOutlet weak var quitButton: UIButton!
     
     @IBOutlet weak var newsTable: UITableView!
     var userToken = getToken()
@@ -51,8 +59,8 @@ class NewsViewController: UIViewController {
         newsTable.register(nib, forCellReuseIdentifier: "NewsTableViewCell")
         
         fetchData(token: self.userToken) { // Call fetchData with completion handler
-            print("Data fetched and table reloaded")
-            print(self.PostsData.count)
+//            print("Data fetched and table reloaded")
+//            print(self.PostsData.count)
             DispatchQueue.main.async {
                 self.newsTable.reloadData()
             }
@@ -66,6 +74,38 @@ class NewsViewController: UIViewController {
     
     private func initialize() {
         modalPresentationStyle = .fullScreen
+    }
+    
+    func profileDidDismiss() {
+        self.dismiss(animated: true, completion: nil)
+    }
+
+    @IBAction func profileButtonPressed(_ sender: UIButton) {
+
+//        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+//        let profileVC = storyboard.instantiateViewController(withIdentifier: "ProfileViewController") as! ProfileViewController
+//
+//        profileVC.modalPresentationStyle = .fullScreen
+//        present(profileVC, animated: true)
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        let profileVC = storyboard.instantiateViewController(withIdentifier: "ProfileViewController") as! ProfileViewController
+        profileVC.delegate = self // Устанавливаем делегата
+        present(profileVC, animated: true, completion: nil)
+
+
+    }
+    
+    
+    @IBAction func quitButtonPressed(_ sender: UIButton) {
+        let alert = UIAlertController(title: "Выход", message: "Вы уверены, что хотите выйти?", preferredStyle: .alert)
+
+            alert.addAction(UIAlertAction(title: "Да", style: .default, handler: { [weak self] _ in
+                self?.dismiss(animated: true, completion: nil)
+            }))
+
+            alert.addAction(UIAlertAction(title: "Нет", style: .cancel, handler: nil))
+
+            present(alert, animated: true, completion: nil)
     }
     
     func fetchData(token: String, completion: @escaping () -> Void) {
@@ -105,32 +145,20 @@ class NewsViewController: UIViewController {
                 if let jsonArray = try JSONSerialization.jsonObject(with: data, options: []) as? [[String: Any]] {
                     for jsonObject in jsonArray {
                 
-                        guard let postId = jsonObject["id"] as? Int else {
-                            return
-                        }
-                        
-                        guard let postTitle = jsonObject["title"] as? String else {
-                            return
-                        }
-                        
-                        guard let postPlace = jsonObject["location"] as? String else {
-                            return
-                        }
-                        
-                        guard let postAuthor = jsonObject["username"] as? String else {
-                            return
-                        }
-                        
-                        guard let postDescription = jsonObject["caption"] as? String else {
+                        guard let postId = jsonObject["id"] as? Int,
+                              let postTitle = jsonObject["title"] as? String,
+                              let postPlace = jsonObject["location"] as? String,
+                              let postAuthor = jsonObject["username"] as? String,
+                              let postDescription = jsonObject["caption"] as? String else {
                             return
                         }
                         
                         getImageBytes(token: self.userToken, id: postId) { imageData in
                             if let imageData = imageData {
-                                print("Image data received: \(imageData.count) bytes")
+//                                print("Image data received: \(imageData.count) bytes")
                                 
                                 let CurrentPost: Post = Post(id: postId, title: postTitle, place: postPlace, image: imageData, author: postAuthor, description: postDescription)
-                                CurrentPost.getInfo()
+//                                CurrentPost.getInfo()
                                 self.PostsData.append(CurrentPost)
                                 completion()
                                 

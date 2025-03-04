@@ -84,6 +84,11 @@ class ViewController: UIViewController {
         // Do any additional setup after loading the view.
     }
     
+    private func clearForm() {
+        self.loginTextField.text = ""
+        self.passwordTextField.text = ""
+    }
+    
     @IBAction func authorizationButtonTapped(_ sender: UIButton) {
         guard let username = loginTextField.text, !username.isEmpty,
               let password = passwordTextField.text, !password.isEmpty else {
@@ -166,6 +171,8 @@ class ViewController: UIViewController {
 
                     }))
                     self.present(alert, animated: true, completion: nil)
+                    
+                    self.clearForm()
                 }
             }
         }
@@ -175,6 +182,7 @@ class ViewController: UIViewController {
     
     
     @IBAction func registrationButtonPressed(_ sender: UIButton) {
+        self.clearForm()
         let sb = UIStoryboard(name: "Main", bundle: nil)
         let registrationVC = sb.instantiateViewController(identifier: "RegistrationViewController")
 
