@@ -8,7 +8,7 @@
 import Foundation
 import UIKit
 
-struct Post {
+struct Post: Decodable {
     var id: Int
     var title: String
     var place: String
@@ -43,11 +43,20 @@ class NewsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         initialize()
-        PostsData.removeAll()
-        fetchData(token: userToken)
-//        newsTable.register(NewsTableViewCell.self, forCellReuseIdentifier: "NewsTableViewCell")
+        
+        newsTable.delegate = self
+        newsTable.dataSource = self
+        
         let nib = UINib(nibName: "NewsTableViewCell", bundle: nil)
         newsTable.register(nib, forCellReuseIdentifier: "NewsTableViewCell")
+        
+        fetchData(token: self.userToken) { // Call fetchData with completion handler
+            print("Data fetched and table reloaded")
+            print(self.PostsData.count)
+            DispatchQueue.main.async {
+                self.newsTable.reloadData()
+            }
+        }
     }
     
     required init?(coder: NSCoder) {
@@ -59,9 +68,10 @@ class NewsViewController: UIViewController {
         modalPresentationStyle = .fullScreen
     }
     
-    func fetchData(token: String) {
+    func fetchData(token: String, completion: @escaping () -> Void) {
         guard let url = URL(string: "http://localhost:8080/api/post/all") else {
             print("Invalid URL")
+            completion()
             return
         }
         
@@ -74,24 +84,27 @@ class NewsViewController: UIViewController {
             
             if let error = error {
                 print("Error: \(error)")
+                completion()
                 return
             }
             
             guard let httpResponse = response as? HTTPURLResponse,
                   (200...299).contains(httpResponse.statusCode) else {
                 print("Server error! StatusCode: \(String(describing: (response as? HTTPURLResponse)?.statusCode))")
+                completion()
                 return
             }
             
             guard let data = data else {
                 print("No data received")
+                completion()
                 return
             }
             
             do {
                 if let jsonArray = try JSONSerialization.jsonObject(with: data, options: []) as? [[String: Any]] {
                     for jsonObject in jsonArray {
-                        
+                
                         guard let postId = jsonObject["id"] as? Int else {
                             return
                         }
@@ -104,9 +117,6 @@ class NewsViewController: UIViewController {
                             return
                         }
                         
-                        let postImage = getImageBytes(token: self.userToken, id: postId)
-                        print(postImage)
-                        
                         guard let postAuthor = jsonObject["username"] as? String else {
                             return
                         }
@@ -115,17 +125,30 @@ class NewsViewController: UIViewController {
                             return
                         }
                         
-                        let CurrentPost: Post = Post(id: postId, title: postTitle, place: postPlace, image: postImage, author: postAuthor, description: postDescription)
-//                        CurrentPost.getInfo()
-                        self.PostsData.append(CurrentPost)
+                        getImageBytes(token: self.userToken, id: postId) { imageData in
+                            if let imageData = imageData {
+                                print("Image data received: \(imageData.count) bytes")
+                                
+                                let CurrentPost: Post = Post(id: postId, title: postTitle, place: postPlace, image: imageData, author: postAuthor, description: postDescription)
+                                CurrentPost.getInfo()
+                                self.PostsData.append(CurrentPost)
+                                completion()
+                                
+                            } else {
+                                print("Failed to retrieve image data")
+                                completion()
+                            }
+                        }
                         
                     }
                     
                 } else {
                     print("Не удалось распарсить JSON ответ как массив словарей.")
+                    completion()
                 }
             } catch {
                 print("Ошибка при парсинге JSON: \(error)")
+                completion()
             }
             
             
@@ -137,7 +160,7 @@ class NewsViewController: UIViewController {
 
 extension NewsViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 270.0
+        return 370.0
     }
 }
 
@@ -160,64 +183,51 @@ extension NewsViewController: UITableViewDataSource {
     }
 }
 
-
-    
-func getImageBytes(token: String, id: Int) -> Data {
-    
-    var result: Data = Data(base64Encoded: "")!
-    
+func getImageBytes(token: String, id: Int, completion: @escaping (Data?) -> Void) {
     guard let url = URL(string: "http://localhost:8080/api/image/\(id)/image") else {
         print("Invalid URL")
-        return result
+        completion(nil)
+        return
     }
-    
+
     var request = URLRequest(url: url)
-    
     request.httpMethod = "GET"
-    request.setValue(token, forHTTPHeaderField: "Authorization") // Set Authorization header
-    
+    request.setValue(token, forHTTPHeaderField: "Authorization")
+
     let task = URLSession.shared.dataTask(with: request) { data, response, error in
-        
         if let error = error {
             print("Error: \(error)")
+            completion(nil)
             return
         }
-        
+
         guard let httpResponse = response as? HTTPURLResponse,
               (200...299).contains(httpResponse.statusCode) else {
             print("Server error! StatusCode: \(String(describing: (response as? HTTPURLResponse)?.statusCode))")
+            completion(nil)
             return
         }
-        
+
         guard let data = data else {
             print("No data received")
+            completion(nil)
             return
         }
-        
         do {
-            if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-                if let imgBytes = json["imageBytes"] as? String {
-                    if Data(base64Encoded: imgBytes) != nil {
-                        result = Data(base64Encoded: imgBytes)!
-                    } else {
-                        print("Image not found in JSON response.")
-                    }
-                    
-                } else {
-                    print("Image not found in JSON response.")
-                    return
-                }
-                
-                
-            } else {
-                print("Не удалось распарсить JSON ответ как массив словарей.")
-            }
-        } catch {
-            print("Ошибка при парсинге JSON: \(error)")
-        }
-        
-        
-    }
-    task.resume()
-    return result
+           guard let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+                 let imgBytes = json["imageBytes"] as? String,
+                 let imageData = Data(base64Encoded: imgBytes) else {
+               print("Image not found in JSON response or invalid base64 string.")
+               completion(nil)
+               return
+           }
+
+           completion(imageData)
+
+       } catch {
+           print("Ошибка при парсинге JSON: \(error)")
+           completion(nil)
+       }
+   }
+   task.resume()
 }

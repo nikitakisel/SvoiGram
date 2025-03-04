@@ -10,7 +10,7 @@ import UIKit
 
 class NewsTableViewCell: UITableViewCell {
     
-    private var postId: Int
+    private var postId: Int = -1
     @IBOutlet private weak var postTitle: UILabel!
     @IBOutlet private weak var postPlace: UILabel!
     @IBOutlet private weak var postImage: UIImageView!
@@ -28,9 +28,15 @@ class NewsTableViewCell: UITableViewCell {
         }
     }
     
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+    override func awakeFromNib() {
+       super.awakeFromNib()
+       // Initialization code
     }
+
+    required init?(coder: NSCoder) {
+       super.init(coder: coder)
+    }
+
     
     
     func configure(postId: Int, postTitle: String, postPlace: String, postImage: Data, postAuthor: String, postDescription: String) {
@@ -38,7 +44,7 @@ class NewsTableViewCell: UITableViewCell {
         self.postTitle.text = postTitle
         self.postPlace.text = postPlace
 //        self.postImage.cgImage = postImage
-        self.postAuthor.text = postAuthor
+        self.postAuthor.text = "Posted by \(postAuthor)"
         self.postDescription.text = postDescription
         displayBase64Image(imageData: postImage, imageView: self.postImage)
     }
