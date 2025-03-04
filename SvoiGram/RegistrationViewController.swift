@@ -44,6 +44,15 @@ class RegistrationViewController: UIViewController {
         modalPresentationStyle = .fullScreen
     }
     
+    private func clearForm() {
+        self.emailTextField.text = ""
+        self.nicknameTextField.text = ""
+        self.firstnameTextField.text = ""
+        self.lastnameTextField.text = ""
+        self.passwordTextField.text = ""
+        self.confirmPasswordTextField.text = ""
+    }
+    
     @IBAction func registrationButtonPressed(_ sender: UIButton) {
         guard let email = emailTextField.text, !email.isEmpty,
               let nickname = nicknameTextField.text, !nickname.isEmpty,
@@ -118,6 +127,8 @@ class RegistrationViewController: UIViewController {
                         self?.dismiss(animated: true, completion: nil)
                     }))
                     self.present(alert, animated: true, completion: nil)
+                    
+                    self.clearForm()
 
                 }
             }
@@ -129,6 +140,7 @@ class RegistrationViewController: UIViewController {
     
     
     @IBAction func authorizationButtonPressed(_ sender: UIButton) {
+        self.clearForm()
         dismiss(animated: true, completion: nil)
     }
 }
