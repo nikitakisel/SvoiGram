@@ -15,14 +15,16 @@ struct Post: Decodable {
     var image: Data
     var author: String
     var description: String
+    var likesCount: Int
     
-    init(id: Int, title: String, place: String, image: Data, author: String, description: String) {
+    init(id: Int, title: String, place: String, image: Data, author: String, description: String, likesCount: Int) {
         self.id = id
         self.title = title
         self.place = place
         self.image = image
         self.author = author
         self.description = description
+        self.likesCount = likesCount
     }
     
     func getInfo() {
@@ -31,6 +33,7 @@ struct Post: Decodable {
         print("Place: \(place)")
         print("Author: \(author)")
         print("Image: \(image)")
+        print("Likes: \(likesCount)")
     }
 }
 
@@ -153,17 +156,17 @@ class NewsViewController: UIViewController, ProfileViewControllerDelegate {
                             return
                         }
                         
-                        getImageBytes(token: self.userToken, id: postId) { imageData in
+                        getImageBytes(token: self.userToken, url: "http://localhost:8080/api/image/\(postId)/image") { imageData in
                             if let imageData = imageData {
-//                                print("Image data received: \(imageData.count) bytes")
                                 
-                                let CurrentPost: Post = Post(id: postId, title: postTitle, place: postPlace, image: imageData, author: postAuthor, description: postDescription)
-//                                CurrentPost.getInfo()
+                                let CurrentPost: Post = Post(id: postId, title: postTitle, place: postPlace, image: imageData, author: postAuthor, description: postDescription, likesCount: 0)
                                 self.PostsData.append(CurrentPost)
                                 completion()
                                 
                             } else {
                                 print("Failed to retrieve image data")
+                                let CurrentPost: Post = Post(id: postId, title: postTitle, place: postPlace, image: Data(base64Encoded: "")!, author: postAuthor, description: postDescription, likesCount: 0)
+                                self.PostsData.append(CurrentPost)
                                 completion()
                             }
                         }
@@ -211,8 +214,8 @@ extension NewsViewController: UITableViewDataSource {
     }
 }
 
-func getImageBytes(token: String, id: Int, completion: @escaping (Data?) -> Void) {
-    guard let url = URL(string: "http://localhost:8080/api/image/\(id)/image") else {
+func getImageBytes(token: String, url: String, completion: @escaping (Data?) -> Void) {
+    guard let url = URL(string: url) else {
         print("Invalid URL")
         completion(nil)
         return

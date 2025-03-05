@@ -190,15 +190,6 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vdy-ue-xg2">
-                                <rect key="frame" x="264" y="59" width="48" height="35"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="plain" image="person.fill" catalog="system"/>
-                                <connections>
-                                    <action selector="profileButtonPressed:" destination="7hy-j8-ElV" eventType="touchUpInside" id="gNs-LI-n3p"/>
-                                </connections>
-                            </button>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DXV-4f-Yb0">
                                 <rect key="frame" x="323" y="60" width="54" height="35"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
@@ -206,6 +197,15 @@
                                 <buttonConfiguration key="configuration" style="plain" image="rectangle.portrait.and.arrow.right" catalog="system"/>
                                 <connections>
                                     <action selector="quitButtonPressed:" destination="7hy-j8-ElV" eventType="touchUpInside" id="79u-H1-75b"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vdy-ue-xg2">
+                                <rect key="frame" x="267" y="60" width="48" height="35"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" image="person.fill" catalog="system"/>
+                                <connections>
+                                    <action selector="profileButtonPressed:" destination="7hy-j8-ElV" eventType="touchUpInside" id="gNs-LI-n3p"/>
                                 </connections>
                             </button>
                         </subviews>
@@ -284,11 +284,21 @@
                                     <action selector="quitButtonPressed:" destination="6Ob-uf-EDf" eventType="touchUpInside" id="5vj-Bb-9hs"/>
                                 </connections>
                             </button>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="8H1-qW-K6s">
+                                <rect key="frame" x="206" y="59" width="47" height="35"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" image="plus" catalog="system"/>
+                                <connections>
+                                    <action selector="addPostButtonPressed:" destination="6Ob-uf-EDf" eventType="touchUpInside" id="H4b-pD-uFL"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="5gr-tm-lmR"/>
                         <color key="backgroundColor" systemColor="systemGray5Color"/>
                     </view>
                     <connections>
+                        <outlet property="addPostButton" destination="8H1-qW-K6s" id="ksb-Pu-Mvg"/>
                         <outlet property="newsButton" destination="Mww-uI-1yD" id="OnV-fh-ExP"/>
                         <outlet property="postsTable" destination="cQh-eO-FgT" id="zXt-46-g6z"/>
                         <outlet property="quitButton" destination="Cgi-pL-ihl" id="mke-ce-dN6"/>
@@ -305,6 +315,7 @@
     <resources>
         <image name="newspaper" catalog="system" width="128" height="111"/>
         <image name="person.fill" catalog="system" width="128" height="120"/>
+        <image name="plus" catalog="system" width="128" height="113"/>
         <image name="rectangle.portrait.and.arrow.right" catalog="system" width="128" height="109"/>
         <namedColor name="AccentColor">
             <color red="0.0" green="0.46000000000000002" blue="0.89000000000000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
