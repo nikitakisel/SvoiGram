@@ -33,7 +33,7 @@ class ProfileViewController: UIViewController {
         super.viewDidLoad()
         initialize()
         loadProfileData(token: self.userToken)
-        getImageBytes(token: self.userToken, url: "http://localhost:8080/api/image/profileImage") { imageData in
+        getImageData(token: self.userToken, url: "http://localhost:8080/api/image/profileImage") { imageData in
             if let imageData = imageData {
                 self.displayUserImage(imageData: imageData, imageView: self.userPhoto)
             } else {
@@ -89,6 +89,11 @@ class ProfileViewController: UIViewController {
     
     
     @IBAction func addPostButtonPressed(_ sender: UIButton) {
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        let viewController = storyboard.instantiateViewController(withIdentifier: "AddPostViewController")
+        viewController.modalPresentationStyle = .custom
+        viewController.transitioningDelegate = self
+        present(viewController, animated: true, completion: nil)
     }
     
     @IBAction func quitButtonPressed(_ sender: UIButton) {
@@ -210,17 +215,18 @@ class ProfileViewController: UIViewController {
                             return
                         }
                         
-                        getImageBytes(token: self.userToken, url: "http://localhost:8080/api/image/\(postId)/image") { imageData in
+                        getImageData(token: self.userToken, url: "http://localhost:8080/api/image/\(postId)/image") { imageData in
                             if let imageData = imageData {
 //                                print("Image data received: \(imageData.count) bytes")
                                 
                                 let CurrentPost: Post = Post(id: postId, title: postTitle, place: postPlace, image: imageData, author: postAuthor, description: postDescription, likesCount: postLikesCount)
-//                                CurrentPost.getInfo()
                                 self.PostsData.append(CurrentPost)
                                 completion()
                                 
                             } else {
                                 print("Failed to retrieve image data")
+                                let CurrentPost: Post = Post(id: postId, title: postTitle, place: postPlace, image: nil, author: postAuthor, description: postDescription, likesCount: postLikesCount)
+                                self.PostsData.append(CurrentPost)
                                 completion()
                             }
                         }
@@ -263,5 +269,12 @@ extension ProfileViewController: UITableViewDataSource {
         cell.configure(postId: PostsData[indexPath.row].id, postTitle: PostsData[indexPath.row].title, postPlace: PostsData[indexPath.row].place, postImage: PostsData[indexPath.row].image, postDescription: PostsData[indexPath.row].description, postLikesCount: PostsData[indexPath.row].likesCount)
 
         return cell
+    }
+}
+
+
+extension ProfileViewController: UIViewControllerTransitioningDelegate {
+    func presentationController(forPresented presented: UIViewController, presenting: UIViewController?, source: UIViewController) -> UIPresentationController? {
+        return HalfScreenPresentationController(presentedViewController: presented, presenting: presenting)
     }
 }

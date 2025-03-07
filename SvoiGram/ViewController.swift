@@ -59,7 +59,7 @@ func loadJsonFromFile(filename: String) -> [String: Any]? {
 func getToken() -> String {
     if let json = loadJsonFromFile(filename: "UserToken") {
         if let token = json["token"] as? String {
-            return token
+            return "Bearer \(token)"
             // Now you can use the token
         } else {
             return "Token not found in JSON response"

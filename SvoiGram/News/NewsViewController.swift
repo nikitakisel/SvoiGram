@@ -12,12 +12,12 @@ struct Post: Decodable {
     var id: Int
     var title: String
     var place: String
-    var image: Data
+    var image: Data?
     var author: String
     var description: String
     var likesCount: Int
     
-    init(id: Int, title: String, place: String, image: Data, author: String, description: String, likesCount: Int) {
+    init(id: Int, title: String, place: String, image: Data?, author: String, description: String, likesCount: Int) {
         self.id = id
         self.title = title
         self.place = place
@@ -32,7 +32,6 @@ struct Post: Decodable {
         print("Title: \(title)")
         print("Place: \(place)")
         print("Author: \(author)")
-        print("Image: \(image)")
         print("Likes: \(likesCount)")
     }
 }
@@ -156,7 +155,7 @@ class NewsViewController: UIViewController, ProfileViewControllerDelegate {
                             return
                         }
                         
-                        getImageBytes(token: self.userToken, url: "http://localhost:8080/api/image/\(postId)/image") { imageData in
+                        getImageData(token: self.userToken, url: "http://localhost:8080/api/image/\(postId)/image") { imageData in
                             if let imageData = imageData {
                                 
                                 let CurrentPost: Post = Post(id: postId, title: postTitle, place: postPlace, image: imageData, author: postAuthor, description: postDescription, likesCount: 0)
@@ -165,7 +164,7 @@ class NewsViewController: UIViewController, ProfileViewControllerDelegate {
                                 
                             } else {
                                 print("Failed to retrieve image data")
-                                let CurrentPost: Post = Post(id: postId, title: postTitle, place: postPlace, image: Data(base64Encoded: "")!, author: postAuthor, description: postDescription, likesCount: 0)
+                                let CurrentPost: Post = Post(id: postId, title: postTitle, place: postPlace, image: nil, author: postAuthor, description: postDescription, likesCount: 0)
                                 self.PostsData.append(CurrentPost)
                                 completion()
                             }
@@ -214,7 +213,7 @@ extension NewsViewController: UITableViewDataSource {
     }
 }
 
-func getImageBytes(token: String, url: String, completion: @escaping (Data?) -> Void) {
+func getImageData(token: String, url: String, completion: @escaping (Data?) -> Void) {
     guard let url = URL(string: url) else {
         print("Invalid URL")
         completion(nil)
@@ -246,8 +245,8 @@ func getImageBytes(token: String, url: String, completion: @escaping (Data?) -> 
         }
         do {
            guard let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
-                 let imgBytes = json["imageBytes"] as? String,
-                 let imageData = Data(base64Encoded: imgBytes) else {
+                 let imageBase64 = json["encoded_image"] as? String,
+                 let imageData = Data(base64Encoded: imageBase64, options: .ignoreUnknownCharacters) else {
                print("Image not found in JSON response or invalid base64 string.")
                completion(nil)
                return
