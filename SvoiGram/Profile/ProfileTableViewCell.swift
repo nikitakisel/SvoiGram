@@ -8,9 +8,14 @@
 import Foundation
 import UIKit
 
+protocol DeletePostDelegate: AnyObject {
+    func offerToDeletePost(postId: Int)
+}
+
 class ProfileTableViewCell: UITableViewCell {
     
     private var postId: Int = -1
+    weak var delegate: DeletePostDelegate?
     
     @IBOutlet weak var postTitle: UILabel!
     @IBOutlet weak var postPlace: UILabel!
@@ -18,7 +23,8 @@ class ProfileTableViewCell: UITableViewCell {
     
     @IBOutlet weak var postDescription: UILabel!
     @IBOutlet weak var postLikesCount: UILabel!
-    @IBOutlet weak var editButton: UIButton!
+    @IBOutlet weak var deleteButton: UIButton!
+    
     
     override func awakeFromNib() {
        super.awakeFromNib()
@@ -37,5 +43,10 @@ class ProfileTableViewCell: UITableViewCell {
         self.postDescription.text = postDescription
         displayBase64Image(imageData: postImage, imageView: self.postImage)
         self.postLikesCount.text = "\(postLikesCount)"
+    }
+    
+    
+    @IBAction func deleteButtonPressed(_ sender: UIButton) {
+        delegate?.offerToDeletePost(postId: self.postId)
     }
 }

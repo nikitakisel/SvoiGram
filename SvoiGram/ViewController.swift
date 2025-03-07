@@ -93,7 +93,6 @@ class ViewController: UIViewController {
         guard let username = loginTextField.text, !username.isEmpty,
               let password = passwordTextField.text, !password.isEmpty else {
             print("Email and password cannot be empty.")
-            // Display an alert to the user
             return
         }
 
@@ -149,7 +148,7 @@ class ViewController: UIViewController {
 
                 do {
                     if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-                        // Save the JSON to a file
+                        
                         saveJsonToFile(jsonObject: json, filename: "UserToken")
                     } else {
                         print("Could not parse JSON response.")
@@ -158,8 +157,6 @@ class ViewController: UIViewController {
                     print("Error parsing JSON: \(error)")
                 }
 
-                
-                // Update UI or perform actions based on the POST response
                 DispatchQueue.main.async {
                     
                     let alert = UIAlertController(title: "Вход", message: "Успешная авторизация!", preferredStyle: .alert)

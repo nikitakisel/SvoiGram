@@ -8,8 +8,13 @@
 import Foundation
 import UIKit
 
+protocol UpdatePostTableDelegate: AnyObject {
+    func updatePostTable()
+}
+
 class AddPostViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
+    weak var delegate: UpdatePostTableDelegate?
     var postImageName: String = ""
     var postImageData: Data = Data(base64Encoded: "")!
     var userToken = getToken()
@@ -109,9 +114,20 @@ class AddPostViewController: UIViewController, UIImagePickerControllerDelegate, 
                         }
 
                         DispatchQueue.main.async {
-                            self.addImageToPost(token: getToken(), postId: postId)
+                            
+                            if self.imageNameLabel.text != "No Image" {
+                                self.addImageToPost(token: getToken(), postId: postId)
+                            }
+                            
+                            let alert = UIAlertController(title: "Успешно!", message: "Ваш пост опубликован!", preferredStyle: .alert)
+                            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { [weak self] _ in
+                                self?.dismiss(animated: true, completion: nil)
+                                self?.delegate?.updatePostTable()
+                            }))
+                            self.present(alert, animated: true, completion: nil)
+
+                            self.clearForm()
                         }
-                        
                         
                     } else {
                         print("Could not parse JSON response.")
@@ -138,11 +154,6 @@ class AddPostViewController: UIViewController, UIImagePickerControllerDelegate, 
             "encoded_image": self.postImageData.base64EncodedString(options: .lineLength76Characters)
         ]
         
-        print(self.postImageName)
-        print("Данные: \(self.postImageData)")
-        print(type(of: self.postImageData.base64EncodedString(options: .lineLength76Characters)))
-        print("Строка: \(self.postImageData.base64EncodedString(options: .lineLength76Characters))")
-
         guard let jsonData = try? JSONSerialization.data(withJSONObject: requestBody) else {
             print("Failed to serialize JSON data.")
             return
@@ -174,16 +185,16 @@ class AddPostViewController: UIViewController, UIImagePickerControllerDelegate, 
             if let data = data, let responseString = String(data: data, encoding: .utf8) {
                 print("Response from POST request: \(responseString)")
                 
-                DispatchQueue.main.async {
-                    // Example: Display a success message
-                    let alert = UIAlertController(title: "Успешно!", message: "Ваш пост опубликован!", preferredStyle: .alert)
-                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { [weak self] _ in
-                        self?.dismiss(animated: true, completion: nil)
-                    }))
-                    self.present(alert, animated: true, completion: nil)
-
-                    self.clearForm()
-                }
+//                DispatchQueue.main.async {
+//                    // Example: Display a success message
+//                    let alert = UIAlertController(title: "Успешно!", message: "Ваш пост опубликован!", preferredStyle: .alert)
+//                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { [weak self] _ in
+//                        self?.dismiss(animated: true, completion: nil)
+//                    }))
+//                    self.present(alert, animated: true, completion: nil)
+//
+//                    self.clearForm()
+//                }
             }
         }
 
