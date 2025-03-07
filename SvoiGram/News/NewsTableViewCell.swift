@@ -17,17 +17,6 @@ class NewsTableViewCell: UITableViewCell {
     @IBOutlet private weak var postAuthor: UILabel!
     @IBOutlet private weak var postDescription: UILabel!
     
-    func displayBase64Image(imageData: Data, imageView: UIImageView) {
-        if let image = UIImage(data: imageData) {
-            imageView.image = image // imageView - ваш UIImageView
-        } else {
-            // Обработка ошибки:
-            print("Ошибка: Не удалось создать изображение из предоставленных данных.")
-            // Например, можно установить placeholder image:
-            imageView.image = UIImage(named: "placeholderImage")
-        }
-    }
-    
     override func awakeFromNib() {
        super.awakeFromNib()
        // Initialization code
@@ -36,10 +25,8 @@ class NewsTableViewCell: UITableViewCell {
     required init?(coder: NSCoder) {
        super.init(coder: coder)
     }
-
     
-    
-    func configure(postId: Int, postTitle: String, postPlace: String, postImage: Data, postAuthor: String, postDescription: String) {
+    func configure(postId: Int, postTitle: String, postPlace: String, postImage: Data?, postAuthor: String, postDescription: String) {
         self.postId = postId
         self.postTitle.text = postTitle
         self.postPlace.text = postPlace
@@ -47,5 +34,17 @@ class NewsTableViewCell: UITableViewCell {
         self.postAuthor.text = "Posted by \(postAuthor)"
         self.postDescription.text = postDescription
         displayBase64Image(imageData: postImage, imageView: self.postImage)
+    }
+}
+
+
+func displayBase64Image(imageData: Data?, imageView: UIImageView) {
+    if let image = imageData {
+        imageView.image = UIImage(data: image) // imageView - ваш UIImageView
+    } else {
+        // Обработка ошибки:
+        print("Ошибка: Не удалось создать изображение из предоставленных данных.")
+        // Например, можно установить placeholder image:
+        imageView.image = UIImage(systemName: "newspaper")
     }
 }

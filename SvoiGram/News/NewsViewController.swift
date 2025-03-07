@@ -12,17 +12,19 @@ struct Post: Decodable {
     var id: Int
     var title: String
     var place: String
-    var image: Data
+    var image: Data?
     var author: String
     var description: String
+    var likesCount: Int
     
-    init(id: Int, title: String, place: String, image: Data, author: String, description: String) {
+    init(id: Int, title: String, place: String, image: Data?, author: String, description: String, likesCount: Int) {
         self.id = id
         self.title = title
         self.place = place
         self.image = image
         self.author = author
         self.description = description
+        self.likesCount = likesCount
     }
     
     func getInfo() {
@@ -30,7 +32,7 @@ struct Post: Decodable {
         print("Title: \(title)")
         print("Place: \(place)")
         print("Author: \(author)")
-        print("Image: \(image)")
+        print("Likes: \(likesCount)")
     }
 }
 
@@ -38,7 +40,7 @@ protocol ProfileViewControllerDelegate: AnyObject {
     func profileDidDismiss()
 }
 
-class NewsViewController: UIViewController, ProfileViewControllerDelegate {
+class NewsViewController: UIViewController, ProfileViewControllerDelegate, UpdatePostTableDelegate {
     
     @IBOutlet weak var profileButton: UIButton!
     
@@ -58,13 +60,7 @@ class NewsViewController: UIViewController, ProfileViewControllerDelegate {
         let nib = UINib(nibName: "NewsTableViewCell", bundle: nil)
         newsTable.register(nib, forCellReuseIdentifier: "NewsTableViewCell")
         
-        fetchData(token: self.userToken) { // Call fetchData with completion handler
-//            print("Data fetched and table reloaded")
-//            print(self.PostsData.count)
-            DispatchQueue.main.async {
-                self.newsTable.reloadData()
-            }
-        }
+        updatePostTable()
     }
     
     required init?(coder: NSCoder) {
@@ -79,6 +75,17 @@ class NewsViewController: UIViewController, ProfileViewControllerDelegate {
     func profileDidDismiss() {
         self.dismiss(animated: true, completion: nil)
     }
+    
+    func updatePostTable() {
+        self.PostsData.removeAll()
+        
+        fetchData(token: self.userToken) {
+            DispatchQueue.main.async {
+                self.newsTable.reloadData()
+            }
+        }
+    }
+
 
     @IBAction func profileButtonPressed(_ sender: UIButton) {
 
@@ -89,7 +96,8 @@ class NewsViewController: UIViewController, ProfileViewControllerDelegate {
 //        present(profileVC, animated: true)
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         let profileVC = storyboard.instantiateViewController(withIdentifier: "ProfileViewController") as! ProfileViewController
-        profileVC.delegate = self // Устанавливаем делегата
+        profileVC.updateDelegate = self
+        profileVC.closeDelegate = self
         present(profileVC, animated: true, completion: nil)
 
 
@@ -153,17 +161,17 @@ class NewsViewController: UIViewController, ProfileViewControllerDelegate {
                             return
                         }
                         
-                        getImageBytes(token: self.userToken, id: postId) { imageData in
+                        getImageData(token: self.userToken, url: "http://localhost:8080/api/image/\(postId)/image") { imageData in
                             if let imageData = imageData {
-//                                print("Image data received: \(imageData.count) bytes")
                                 
-                                let CurrentPost: Post = Post(id: postId, title: postTitle, place: postPlace, image: imageData, author: postAuthor, description: postDescription)
-//                                CurrentPost.getInfo()
+                                let CurrentPost: Post = Post(id: postId, title: postTitle, place: postPlace, image: imageData, author: postAuthor, description: postDescription, likesCount: 0)
                                 self.PostsData.append(CurrentPost)
                                 completion()
                                 
                             } else {
                                 print("Failed to retrieve image data")
+                                let CurrentPost: Post = Post(id: postId, title: postTitle, place: postPlace, image: nil, author: postAuthor, description: postDescription, likesCount: 0)
+                                self.PostsData.append(CurrentPost)
                                 completion()
                             }
                         }
@@ -211,8 +219,8 @@ extension NewsViewController: UITableViewDataSource {
     }
 }
 
-func getImageBytes(token: String, id: Int, completion: @escaping (Data?) -> Void) {
-    guard let url = URL(string: "http://localhost:8080/api/image/\(id)/image") else {
+func getImageData(token: String, url: String, completion: @escaping (Data?) -> Void) {
+    guard let url = URL(string: url) else {
         print("Invalid URL")
         completion(nil)
         return
@@ -243,8 +251,8 @@ func getImageBytes(token: String, id: Int, completion: @escaping (Data?) -> Void
         }
         do {
            guard let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
-                 let imgBytes = json["imageBytes"] as? String,
-                 let imageData = Data(base64Encoded: imgBytes) else {
+                 let imageBase64 = json["encoded_image"] as? String,
+                 let imageData = Data(base64Encoded: imageBase64, options: .ignoreUnknownCharacters) else {
                print("Image not found in JSON response or invalid base64 string.")
                completion(nil)
                return
