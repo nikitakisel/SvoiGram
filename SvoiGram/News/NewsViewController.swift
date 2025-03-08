@@ -16,8 +16,9 @@ struct Post: Decodable {
     var author: String
     var description: String
     var likesCount: Int
+    var usersLiked: [String]
     
-    init(id: Int, title: String, place: String, image: Data?, author: String, description: String, likesCount: Int) {
+    init(id: Int, title: String, place: String, image: Data?, author: String, description: String, likesCount: Int, usersLiked: [String]) {
         self.id = id
         self.title = title
         self.place = place
@@ -25,6 +26,7 @@ struct Post: Decodable {
         self.author = author
         self.description = description
         self.likesCount = likesCount
+        self.usersLiked = usersLiked
     }
     
     func getInfo() {
@@ -157,20 +159,23 @@ class NewsViewController: UIViewController, ProfileViewControllerDelegate, Updat
                               let postTitle = jsonObject["title"] as? String,
                               let postPlace = jsonObject["location"] as? String,
                               let postAuthor = jsonObject["username"] as? String,
-                              let postDescription = jsonObject["caption"] as? String else {
+                              let postDescription = jsonObject["caption"] as? String,
+                              let postLikesCount = jsonObject["likes"] as? Int,
+                              let postUsersLiked = jsonObject["usersLiked"] as? [String] else {
                             return
                         }
                         
                         getImageData(token: self.userToken, url: "http://localhost:8080/api/image/\(postId)/image") { imageData in
                             if let imageData = imageData {
                                 
-                                let CurrentPost: Post = Post(id: postId, title: postTitle, place: postPlace, image: imageData, author: postAuthor, description: postDescription, likesCount: 0)
+                                let CurrentPost: Post = Post(id: postId, title: postTitle, place: postPlace, image: imageData, author: postAuthor, description: postDescription, likesCount: postLikesCount, usersLiked: postUsersLiked)
+                                CurrentPost.getInfo()
                                 self.PostsData.append(CurrentPost)
                                 completion()
                                 
                             } else {
                                 print("Failed to retrieve image data")
-                                let CurrentPost: Post = Post(id: postId, title: postTitle, place: postPlace, image: nil, author: postAuthor, description: postDescription, likesCount: 0)
+                                let CurrentPost: Post = Post(id: postId, title: postTitle, place: postPlace, image: nil, author: postAuthor, description: postDescription, likesCount: postLikesCount, usersLiked: postUsersLiked)
                                 self.PostsData.append(CurrentPost)
                                 completion()
                             }
@@ -196,7 +201,7 @@ class NewsViewController: UIViewController, ProfileViewControllerDelegate, Updat
 
 extension NewsViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 370.0
+        return 400.0
     }
 }
 
@@ -213,7 +218,7 @@ extension NewsViewController: UITableViewDataSource {
         let cell = tableView.dequeueReusableCell(withIdentifier: "NewsTableViewCell", for: indexPath) as! NewsTableViewCell
 
         // Настройка ячейки с данными
-        cell.configure(postId: PostsData[indexPath.row].id, postTitle: PostsData[indexPath.row].title, postPlace: PostsData[indexPath.row].place, postImage: PostsData[indexPath.row].image, postAuthor: PostsData[indexPath.row].author, postDescription: PostsData[indexPath.row].description)
+        cell.configure(postId: PostsData[indexPath.row].id, postTitle: PostsData[indexPath.row].title, postPlace: PostsData[indexPath.row].place, postImage: PostsData[indexPath.row].image, postAuthor: PostsData[indexPath.row].author, postDescription: PostsData[indexPath.row].description, postLikesCount: PostsData[indexPath.row].likesCount, postUsersLiked: PostsData[indexPath.row].usersLiked)
 
         return cell
     }

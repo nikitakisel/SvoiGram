@@ -222,13 +222,13 @@ class ProfileViewController: UIViewController, UpdatePostTableDelegate, DeletePo
                             if let imageData = imageData {
 //                                print("Image data received: \(imageData.count) bytes")
                                 
-                                let CurrentPost: Post = Post(id: postId, title: postTitle, place: postPlace, image: imageData, author: postAuthor, description: postDescription, likesCount: postLikesCount)
+                                let CurrentPost: Post = Post(id: postId, title: postTitle, place: postPlace, image: imageData, author: postAuthor, description: postDescription, likesCount: postLikesCount, usersLiked: [])
                                 self.PostsData.append(CurrentPost)
                                 completion()
                                 
                             } else {
                                 print("Failed to retrieve image data")
-                                let CurrentPost: Post = Post(id: postId, title: postTitle, place: postPlace, image: nil, author: postAuthor, description: postDescription, likesCount: postLikesCount)
+                                let CurrentPost: Post = Post(id: postId, title: postTitle, place: postPlace, image: nil, author: postAuthor, description: postDescription, likesCount: postLikesCount, usersLiked: [])
                                 self.PostsData.append(CurrentPost)
                                 completion()
                             }
