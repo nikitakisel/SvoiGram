@@ -184,30 +184,15 @@ class AddPostViewController: UIViewController, UIImagePickerControllerDelegate, 
 
             if let data = data, let responseString = String(data: data, encoding: .utf8) {
                 print("Response from POST request: \(responseString)")
-                
-//                DispatchQueue.main.async {
-//                    // Example: Display a success message
-//                    let alert = UIAlertController(title: "Успешно!", message: "Ваш пост опубликован!", preferredStyle: .alert)
-//                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { [weak self] _ in
-//                        self?.dismiss(animated: true, completion: nil)
-//                    }))
-//                    self.present(alert, animated: true, completion: nil)
-//
-//                    self.clearForm()
-//                }
             }
         }
 
         task.resume()
     }
     
-    
-    
-    
     @IBAction func exitButtonPressed(_ sender: UIButton) {
         self.dismiss(animated: true, completion: nil)
     }
-    
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         picker.dismiss(animated: true, completion: nil)
@@ -241,7 +226,6 @@ class AddPostViewController: UIViewController, UIImagePickerControllerDelegate, 
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         picker.dismiss(animated: true, completion: nil)
     }
-
     
     func clearForm() {
         self.postTitleTextField.text = ""
@@ -251,7 +235,6 @@ class AddPostViewController: UIViewController, UIImagePickerControllerDelegate, 
     }
 
 }
-
 
 
 class HalfScreenPresentationController: UIPresentationController {

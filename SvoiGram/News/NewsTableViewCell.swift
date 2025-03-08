@@ -168,6 +168,7 @@ class NewsTableViewCell: UITableViewCell {
 func displayBase64Image(imageData: Data?, imageView: UIImageView) {
     if let image = imageData {
         imageView.image = UIImage(data: image) // imageView - ваш UIImageView
+        imageView.contentMode = .scaleAspectFill
     } else {
         // Обработка ошибки:
         print("Ошибка: Не удалось создать изображение из предоставленных данных.")

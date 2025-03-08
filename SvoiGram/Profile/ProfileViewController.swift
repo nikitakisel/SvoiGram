@@ -8,12 +8,16 @@
 import Foundation
 import UIKit
 
-class ProfileViewController: UIViewController, UpdatePostTableDelegate, DeletePostDelegate {
+class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UpdatePostTableDelegate, DeletePostDelegate, EditProfileDataDelegate {
     
     weak var updateDelegate: UpdatePostTableDelegate?
     weak var closeDelegate: ProfileViewControllerDelegate?
+    
     var userToken = getToken()
     var PostsData: [Post] = []
+    
+    var postImageName: String = ""
+    var postImageData: Data = Data(base64Encoded: "")!
     
     @IBOutlet weak var userNickNameLabel: UILabel!
     @IBOutlet weak var userNameLabel: UILabel!
@@ -26,6 +30,10 @@ class ProfileViewController: UIViewController, UpdatePostTableDelegate, DeletePo
     override func viewDidLoad() {
         super.viewDidLoad()
         initialize()
+        
+        self.userPhoto.layer.cornerRadius = self.userPhoto.frame.size.width / 2
+        self.userPhoto.layer.masksToBounds = true
+
         loadProfileData(token: self.userToken)
         getImageData(token: self.userToken, url: "http://localhost:8080/api/image/profileImage") { imageData in
             if let imageData = imageData {
@@ -72,10 +80,15 @@ class ProfileViewController: UIViewController, UpdatePostTableDelegate, DeletePo
 
     }
     
+    func updateUserData() {
+        self.loadProfileData(token: getToken())
+    }
+    
     func displayUserImage(imageData: Data, imageView: UIImageView) {
         if let image = UIImage(data: imageData) {
             DispatchQueue.main.async {
                 imageView.image = image
+                imageView.contentMode = .scaleAspectFill
             }
         } else {
             print("Ошибка: Не удалось создать изображение из предоставленных данных.")
@@ -92,11 +105,29 @@ class ProfileViewController: UIViewController, UpdatePostTableDelegate, DeletePo
     
     @IBAction func addPostButtonPressed(_ sender: UIButton) {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        let viewController = storyboard.instantiateViewController(withIdentifier: "AddPostViewController") as! AddPostViewController
-        viewController.delegate = self
-        viewController.modalPresentationStyle = .custom
-        viewController.transitioningDelegate = self
-        present(viewController, animated: true, completion: nil)
+        let addPostVC = storyboard.instantiateViewController(withIdentifier: "AddPostViewController") as! AddPostViewController
+        addPostVC.delegate = self
+        addPostVC.modalPresentationStyle = .custom
+        addPostVC.transitioningDelegate = self
+        present(addPostVC, animated: true, completion: nil)
+    }
+    
+    
+    @IBAction func editProfileButtonPressed(_ sender: UIButton) {
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        let editProfileVC = storyboard.instantiateViewController(withIdentifier: "EditProfileViewController") as! EditProfileViewController
+        editProfileVC.delegate = self
+        editProfileVC.modalPresentationStyle = .custom
+        editProfileVC.transitioningDelegate = self
+        present(editProfileVC, animated: true, completion: nil)
+    }
+    
+    
+    @IBAction func loadUserPhotoButtonPressed(_ sender: UIButton) {
+        let imagePickerController = UIImagePickerController()
+        imagePickerController.delegate = self
+        imagePickerController.sourceType = .photoLibrary // Choose photo library as source
+        present(imagePickerController, animated: true, completion: nil)
     }
     
     @IBAction func quitButtonPressed(_ sender: UIButton) {
@@ -113,10 +144,94 @@ class ProfileViewController: UIViewController, UpdatePostTableDelegate, DeletePo
 
     }
     
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        picker.dismiss(animated: true, completion: nil)
+        
+        if let image = info[.originalImage] as? UIImage,
+           let imageName = info[.imageURL] as? URL { // Access the URL
+            self.postImageName = imageName.lastPathComponent // Gets the name
+
+            if let imageData = image.jpegData(compressionQuality: 1.0) {
+                self.postImageData = imageData
+                // postImageData теперь содержит строку Base64
+            } else if let imageData = image.pngData() {
+                self.postImageData = imageData
+                // postImageData теперь содержит строку Base64
+            } else {
+                print("Не удалось преобразовать изображение в данные.")
+            }
+            
+            self.uploadImage(token: getToken())
+            
+        } else {
+            print("Error: No image found or URL couldn't be accessed.")
+        }
+    }
+
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        picker.dismiss(animated: true, completion: nil)
+    }
+    
+    func uploadImage(token: String) {
+        // Construct the URL
+        guard let url = URL(string: "http://localhost:8080/api/image/upload") else {
+            print("Invalid URL.")
+            return
+        }
+
+        // Prepare the request body
+        let requestBody: [String: Any] = [
+            "name": self.postImageName,
+            "encoded_image": self.postImageData.base64EncodedString()
+        ]
+
+        guard let jsonData = try? JSONSerialization.data(withJSONObject: requestBody) else {
+            print("Failed to serialize JSON data.")
+            return
+        }
+
+        // Create the request
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = jsonData
+        request.setValue(token, forHTTPHeaderField: "Authorization")
+
+        // Perform the POST request
+        let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
+            if let error = error {
+                print("Error with POST request: \(error)")
+                return
+            }
+
+            guard let httpResponse = response as? HTTPURLResponse,
+                  (200...299).contains(httpResponse.statusCode) else {
+                print("Invalid response from POST request!")
+                if let data = data, let responseString = String(data: data, encoding: .utf8) {
+                    print("Response: \(responseString)")
+                }
+                return
+            }
+
+            if let data = data, let responseString = String(data: data, encoding: .utf8) {
+                print("Response from POST request: \(responseString)")
+                
+                self.displayUserImage(imageData: self.postImageData, imageView: self.userPhoto)
+
+                DispatchQueue.main.async {
+                    let alert = UIAlertController(title: "Успешно!", message: "Аватар загружен!", preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                    self.present(alert, animated: true, completion: nil)
+                }
+            }
+        }
+
+        task.resume()
+    }
+    
     func loadProfileData(token: String) {
         guard let url = URL(string: "http://localhost:8080/api/user/") else {
             print("Invalid URL")
-//            completion()
             return
         }
         
@@ -129,14 +244,12 @@ class ProfileViewController: UIViewController, UpdatePostTableDelegate, DeletePo
             
             if let error = error {
                 print("Error: \(error)")
-//                completion()
                 return
             }
             
             guard let httpResponse = response as? HTTPURLResponse,
                   (200...299).contains(httpResponse.statusCode) else {
                 print("Server error! StatusCode: \(String(describing: (response as? HTTPURLResponse)?.statusCode))")
-//                completion()
                 return
             }
             
@@ -166,11 +279,8 @@ class ProfileViewController: UIViewController, UpdatePostTableDelegate, DeletePo
                 }
             }
         }
-
         task.resume()
     }
-    
-    
     
     func fetchData(token: String, completion: @escaping () -> Void) {
         guard let url = URL(string: "http://localhost:8080/api/post/user/posts") else {
