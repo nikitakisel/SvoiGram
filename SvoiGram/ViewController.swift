@@ -77,11 +77,23 @@ class ViewController: UIViewController {
     @IBOutlet weak var authorizationButton: UIButton!
     @IBOutlet weak var registrationButton: UIButton!
     
+    @IBOutlet weak var backgroundImageView: UIImageView!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         passwordTextField.isSecureTextEntry = true
         authorizationButton.layer.cornerRadius = 10
+        loadBackgroundImage()
         // Do any additional setup after loading the view.
+    }
+    
+    func loadBackgroundImage() {
+        let myImage = UIImage(named: "Background")
+            self.backgroundImageView.image = myImage
+            view.addSubview(backgroundImageView)
+            backgroundImageView.contentMode = .scaleAspectFill
+            view.sendSubviewToBack(backgroundImageView)
+
     }
     
     private func clearForm() {
