@@ -107,7 +107,11 @@ class EditProfileViewController: UIViewController, UIImagePickerControllerDelega
               let userFirstName = userFirstNameLabel.text, !userFirstName.isEmpty,
               let userLastName = userLastNameLabel.text, !userLastName.isEmpty else {
             print("Inputs cannot be empty.")
-            // Display an alert to the user
+            DispatchQueue.main.async {
+                let alert = UIAlertController(title: "Ошибка", message: "Вы заполнили не все поля!", preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                self.present(alert, animated: true, completion: nil)
+            }
             return
         }
         

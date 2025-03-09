@@ -173,7 +173,6 @@ class NewsViewController: UIViewController, ProfileViewControllerDelegate, Updat
                                 if let imageData = imageData {
                                     
                                     let CurrentPost: Post = Post(id: postId, title: postTitle, place: postPlace, image: imageData, author: postAuthor, description: postDescription, likesCount: postLikesCount, usersLiked: postUsersLiked)
-                                    CurrentPost.getInfo()
                                     self.PostsData.append(CurrentPost)
                                     completion()
                                     

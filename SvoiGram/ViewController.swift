@@ -105,6 +105,11 @@ class ViewController: UIViewController {
         guard let username = loginTextField.text, !username.isEmpty,
               let password = passwordTextField.text, !password.isEmpty else {
             print("Email and password cannot be empty.")
+            DispatchQueue.main.async {
+                let alert = UIAlertController(title: "Ошибка", message: "Вы заполнили не все поля!", preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                self.present(alert, animated: true, completion: nil)
+            }
             return
         }
 

@@ -212,23 +212,16 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
             guard let httpResponse = response as? HTTPURLResponse,
                   (200...299).contains(httpResponse.statusCode) else {
                 print("Invalid response from POST request!")
-                if let data = data, let responseString = String(data: data, encoding: .utf8) {
-                    print("Response: \(responseString)")
-                }
                 return
             }
 
-            if let data = data, let responseString = String(data: data, encoding: .utf8) {
-                print("Response from POST request: \(responseString)")
-                
-                self.displayUserImage(imageData: self.postImageData, imageView: self.userPhoto)
-
-                DispatchQueue.main.async {
-                    let alert = UIAlertController(title: "Успешно!", message: "Аватар загружен!", preferredStyle: .alert)
-                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-                    self.present(alert, animated: true, completion: nil)
-                }
+            self.displayUserImage(imageData: self.postImageData, imageView: self.userPhoto)
+            DispatchQueue.main.async {
+                let alert = UIAlertController(title: "Успешно!", message: "Аватар загружен!", preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                self.present(alert, animated: true, completion: nil)
             }
+            
         }
 
         task.resume()
@@ -335,8 +328,6 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
                         
                         getImageData(token: self.userToken, url: "http://localhost:8080/api/image/\(postId)/image") { imageData in
                             if let imageData = imageData {
-//                                print("Image data received: \(imageData.count) bytes")
-                                
                                 let CurrentPost: Post = Post(id: postId, title: postTitle, place: postPlace, image: imageData, author: postAuthor, description: postDescription, likesCount: postLikesCount, usersLiked: [])
                                 self.PostsData.append(CurrentPost)
                                 completion()

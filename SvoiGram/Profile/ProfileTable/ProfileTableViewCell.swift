@@ -38,7 +38,7 @@ class ProfileTableViewCell: UITableViewCell, DeleteCommentDelegate, UpdateCommen
         commentsCollectionView.register(nib, forCellWithReuseIdentifier: "ProfileCollectionViewCell")
         
         if let layout = commentsCollectionView.collectionViewLayout as? UICollectionViewFlowLayout {
-            layout.itemSize = CGSize(width: commentsCollectionView.frame.width, height: 35)
+            layout.itemSize = CGSize(width: commentsCollectionView.frame.width, height: 30)
             layout.minimumInteritemSpacing = 0
             layout.minimumLineSpacing = 0
             layout.scrollDirection = .vertical
@@ -118,10 +118,8 @@ class ProfileTableViewCell: UITableViewCell, DeleteCommentDelegate, UpdateCommen
                               let commentUsername = jsonObject["username"] as? String else {
                             return
                         }
-                        print(commentId)
                         
                         let newComment: Comment = Comment(id: commentId, userName: commentUsername, userComment: commentValue)
-                        newComment.getInfo()
                         self.PostComments.append(newComment)
                         completion()
                     }

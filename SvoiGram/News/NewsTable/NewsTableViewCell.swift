@@ -107,7 +107,6 @@ class NewsTableViewCell: UITableViewCell {
             }
             return
         }
-        
         self.addComment(token: getToken(), comment: self.commentLabel.text!)
         
     }
@@ -119,7 +118,6 @@ class NewsTableViewCell: UITableViewCell {
         }
         
         var request = URLRequest(url: url)
-        
         request.httpMethod = "POST"
         request.setValue(token, forHTTPHeaderField: "Authorization") // Set Authorization header
         
@@ -136,7 +134,7 @@ class NewsTableViewCell: UITableViewCell {
                 return
             }
             
-            if let data = data, let responseString = String(data: data, encoding: .utf8) {
+            if let data = data {
                 do {
                     if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
                         
@@ -251,7 +249,7 @@ class NewsTableViewCell: UITableViewCell {
                 return
             }
             
-            if let data = data, let responseString = String(data: data, encoding: .utf8) {
+            if let data = data {
                 do {
                     if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
                         
@@ -316,10 +314,8 @@ class NewsTableViewCell: UITableViewCell {
                               let commentUsername = jsonObject["username"] as? String else {
                             return
                         }
-                        print(commentId)
                         
                         let newComment: Comment = Comment(id: commentId, userName: commentUsername, userComment: commentValue)
-                        newComment.getInfo()
                         self.PostComments.append(newComment)
                         completion()
                     }
