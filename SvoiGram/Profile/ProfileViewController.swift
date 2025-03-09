@@ -8,10 +8,11 @@
 import Foundation
 import UIKit
 
-class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UpdatePostTableDelegate, DeletePostDelegate, EditProfileDataDelegate {
+class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UpdatePostTableDelegate, DeletePostDelegate, EditProfileDataDelegate, UpdateCommentsDelegate {
     
     weak var updateDelegate: UpdatePostTableDelegate?
     weak var closeDelegate: ProfileViewControllerDelegate?
+    weak var updateCommentsDelegate: UpdateCommentsDelegate?
     
     var userToken = getToken()
     var PostsData: [Post] = []
@@ -78,6 +79,10 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         
         updateDelegate?.updatePostTable()
 
+    }
+    
+    func updateNewsCommentsTable() {
+        self.updateCommentsDelegate?.updateNewsCommentsTable()
     }
     
     func updateUserData() {
@@ -417,7 +422,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
 
 extension ProfileViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 370.0
+        return 470.0
     }
 }
 
@@ -429,7 +434,8 @@ extension ProfileViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 
         let cell = tableView.dequeueReusableCell(withIdentifier: "ProfileTableViewCell", for: indexPath) as! ProfileTableViewCell
-        cell.delegate = self
+        cell.deletePostDelegate = self
+        cell.updateCommentsDelegate = self
 
         cell.configure(postId: PostsData[indexPath.row].id, postTitle: PostsData[indexPath.row].title, postPlace: PostsData[indexPath.row].place, postImage: PostsData[indexPath.row].image, postDescription: PostsData[indexPath.row].description, postLikesCount: PostsData[indexPath.row].likesCount)
 

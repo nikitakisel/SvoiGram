@@ -68,9 +68,11 @@ class RegistrationViewController: UIViewController {
         // Check if passwords match
         if passwordTextField.text != confirmPasswordTextField.text {
             // Display an alert
-            let alert = UIAlertController(title: "Ошибка", message: "Пароли должны совпадать!", preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-            self.present(alert, animated: true, completion: nil)
+            DispatchQueue.main.async {
+                let alert = UIAlertController(title: "Ошибка", message: "Пароли должны совпадать!", preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                self.present(alert, animated: true, completion: nil)
+            }
             return
         }
 
