@@ -8,10 +8,11 @@
 import Foundation
 import UIKit
 
-class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UpdatePostTableDelegate, DeletePostDelegate, EditProfileDataDelegate {
+class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UpdatePostTableDelegate, DeletePostDelegate, EditProfileDataDelegate, UpdateCommentsDelegate {
     
     weak var updateDelegate: UpdatePostTableDelegate?
     weak var closeDelegate: ProfileViewControllerDelegate?
+    weak var updateCommentsDelegate: UpdateCommentsDelegate?
     
     var userToken = getToken()
     var PostsData: [Post] = []
@@ -78,6 +79,10 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         
         updateDelegate?.updatePostTable()
 
+    }
+    
+    func updateNewsCommentsTable() {
+        self.updateCommentsDelegate?.updateNewsCommentsTable()
     }
     
     func updateUserData() {
@@ -207,23 +212,16 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
             guard let httpResponse = response as? HTTPURLResponse,
                   (200...299).contains(httpResponse.statusCode) else {
                 print("Invalid response from POST request!")
-                if let data = data, let responseString = String(data: data, encoding: .utf8) {
-                    print("Response: \(responseString)")
-                }
                 return
             }
 
-            if let data = data, let responseString = String(data: data, encoding: .utf8) {
-                print("Response from POST request: \(responseString)")
-                
-                self.displayUserImage(imageData: self.postImageData, imageView: self.userPhoto)
-
-                DispatchQueue.main.async {
-                    let alert = UIAlertController(title: "Успешно!", message: "Аватар загружен!", preferredStyle: .alert)
-                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-                    self.present(alert, animated: true, completion: nil)
-                }
+            self.displayUserImage(imageData: self.postImageData, imageView: self.userPhoto)
+            DispatchQueue.main.async {
+                let alert = UIAlertController(title: "Успешно!", message: "Аватар загружен!", preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                self.present(alert, animated: true, completion: nil)
             }
+            
         }
 
         task.resume()
@@ -330,8 +328,6 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
                         
                         getImageData(token: self.userToken, url: "http://localhost:8080/api/image/\(postId)/image") { imageData in
                             if let imageData = imageData {
-//                                print("Image data received: \(imageData.count) bytes")
-                                
                                 let CurrentPost: Post = Post(id: postId, title: postTitle, place: postPlace, image: imageData, author: postAuthor, description: postDescription, likesCount: postLikesCount, usersLiked: [])
                                 self.PostsData.append(CurrentPost)
                                 completion()
@@ -417,7 +413,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
 
 extension ProfileViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 370.0
+        return 470.0
     }
 }
 
@@ -429,7 +425,8 @@ extension ProfileViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 
         let cell = tableView.dequeueReusableCell(withIdentifier: "ProfileTableViewCell", for: indexPath) as! ProfileTableViewCell
-        cell.delegate = self
+        cell.deletePostDelegate = self
+        cell.updateCommentsDelegate = self
 
         cell.configure(postId: PostsData[indexPath.row].id, postTitle: PostsData[indexPath.row].title, postPlace: PostsData[indexPath.row].place, postImage: PostsData[indexPath.row].image, postDescription: PostsData[indexPath.row].description, postLikesCount: PostsData[indexPath.row].likesCount)
 

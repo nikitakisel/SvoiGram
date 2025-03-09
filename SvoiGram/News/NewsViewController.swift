@@ -42,7 +42,7 @@ protocol ProfileViewControllerDelegate: AnyObject {
     func profileDidDismiss()
 }
 
-class NewsViewController: UIViewController, ProfileViewControllerDelegate, UpdatePostTableDelegate {
+class NewsViewController: UIViewController, ProfileViewControllerDelegate, UpdatePostTableDelegate, UpdateCommentsDelegate {
     
     @IBOutlet weak var profileButton: UIButton!
     
@@ -87,7 +87,10 @@ class NewsViewController: UIViewController, ProfileViewControllerDelegate, Updat
             }
         }
     }
-
+    
+    func updateNewsCommentsTable() {
+        self.updatePostTable()
+    }
 
     @IBAction func profileButtonPressed(_ sender: UIButton) {
 
@@ -100,6 +103,7 @@ class NewsViewController: UIViewController, ProfileViewControllerDelegate, Updat
         let profileVC = storyboard.instantiateViewController(withIdentifier: "ProfileViewController") as! ProfileViewController
         profileVC.updateDelegate = self
         profileVC.closeDelegate = self
+        profileVC.updateCommentsDelegate = self
         present(profileVC, animated: true, completion: nil)
 
 
@@ -154,7 +158,7 @@ class NewsViewController: UIViewController, ProfileViewControllerDelegate, Updat
             do {
                 if let jsonArray = try JSONSerialization.jsonObject(with: data, options: []) as? [[String: Any]] {
                     for jsonObject in jsonArray {
-                
+                        
                         guard let postId = jsonObject["id"] as? Int,
                               let postTitle = jsonObject["title"] as? String,
                               let postPlace = jsonObject["location"] as? String,
@@ -166,27 +170,26 @@ class NewsViewController: UIViewController, ProfileViewControllerDelegate, Updat
                         }
                         
                         getImageData(token: self.userToken, url: "http://localhost:8080/api/image/\(postId)/image") { imageData in
-                            if let imageData = imageData {
-                                
-                                let CurrentPost: Post = Post(id: postId, title: postTitle, place: postPlace, image: imageData, author: postAuthor, description: postDescription, likesCount: postLikesCount, usersLiked: postUsersLiked)
-                                CurrentPost.getInfo()
-                                self.PostsData.append(CurrentPost)
-                                completion()
-                                
-                            } else {
-                                print("Failed to retrieve image data")
-                                let CurrentPost: Post = Post(id: postId, title: postTitle, place: postPlace, image: nil, author: postAuthor, description: postDescription, likesCount: postLikesCount, usersLiked: postUsersLiked)
-                                self.PostsData.append(CurrentPost)
-                                completion()
+                                if let imageData = imageData {
+                                    
+                                    let CurrentPost: Post = Post(id: postId, title: postTitle, place: postPlace, image: imageData, author: postAuthor, description: postDescription, likesCount: postLikesCount, usersLiked: postUsersLiked)
+                                    self.PostsData.append(CurrentPost)
+                                    completion()
+                                    
+                                } else {
+                                    print("Failed to retrieve image data")
+                                    let CurrentPost: Post = Post(id: postId, title: postTitle, place: postPlace, image: nil, author: postAuthor, description: postDescription, likesCount: postLikesCount, usersLiked: postUsersLiked)
+                                    self.PostsData.append(CurrentPost)
+                                    completion()
+                                }
                             }
                         }
-                        
-                    }
                     
                 } else {
                     print("Не удалось распарсить JSON ответ как массив словарей.")
                     completion()
                 }
+                    
             } catch {
                 print("Ошибка при парсинге JSON: \(error)")
                 completion()
@@ -201,7 +204,7 @@ class NewsViewController: UIViewController, ProfileViewControllerDelegate, Updat
 
 extension NewsViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 400.0
+        return 550.0
     }
 }
 
@@ -211,13 +214,8 @@ extension NewsViewController: UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        // Попытка переиспользовать ячейку
-//        guard let cell = tableView.dequeueReusableCell(withIdentifier: "NewsTableViewCell", for: indexPath) as? NewsTableViewCell else {
-//            fatalError("Не удалось создать/переиспользовать ячейку NewsTableViewCell")
-//        }
         let cell = tableView.dequeueReusableCell(withIdentifier: "NewsTableViewCell", for: indexPath) as! NewsTableViewCell
 
-        // Настройка ячейки с данными
         cell.configure(postId: PostsData[indexPath.row].id, postTitle: PostsData[indexPath.row].title, postPlace: PostsData[indexPath.row].place, postImage: PostsData[indexPath.row].image, postAuthor: PostsData[indexPath.row].author, postDescription: PostsData[indexPath.row].description, postLikesCount: PostsData[indexPath.row].likesCount, postUsersLiked: PostsData[indexPath.row].usersLiked)
 
         return cell

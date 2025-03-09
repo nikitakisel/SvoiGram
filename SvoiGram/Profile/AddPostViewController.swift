@@ -58,7 +58,11 @@ class AddPostViewController: UIViewController, UIImagePickerControllerDelegate, 
               let postDescription = postDescriptionTextField.text, !postDescription.isEmpty,
               let postLocation = postLocationTextField.text, !postLocation.isEmpty else {
             print("Inputs cannot be empty.")
-            // Display an alert to the user
+            DispatchQueue.main.async {
+                let alert = UIAlertController(title: "Ошибка", message: "Вы заполнили не все поля!", preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                self.present(alert, animated: true, completion: nil)
+            }
             return
         }
 
