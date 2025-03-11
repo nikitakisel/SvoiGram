@@ -56,7 +56,7 @@ class ProfileTableViewCell: UITableViewCell, DeleteCommentDelegate, UpdateCommen
 //        self.postImage.cgImage = postImage
         self.postDescription.text = postDescription
         
-        updateComments()
+        self.updateComments()
         displayBase64Image(imageData: postImage, imageView: self.postImage)
         self.postLikesCount.text = "\(postLikesCount)"
     }
