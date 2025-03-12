@@ -181,20 +181,20 @@ class NewsViewController: UIViewController, ProfileViewControllerDelegate, Updat
                         }
                         
                         getImageData(token: self.userToken, url: "http://localhost:8080/api/image/\(postId)/image") { imageData in
-                                if let imageData = imageData {
-                                    
-                                    let CurrentPost: Post = Post(id: postId, title: postTitle, place: postPlace, image: imageData, author: postAuthor, description: postDescription, likesCount: postLikesCount, usersLiked: postUsersLiked)
-                                    self.PostsData.append(CurrentPost)
-                                    completion()
-                                    
-                                } else {
-                                    print("Failed to retrieve image data")
-                                    let CurrentPost: Post = Post(id: postId, title: postTitle, place: postPlace, image: nil, author: postAuthor, description: postDescription, likesCount: postLikesCount, usersLiked: postUsersLiked)
-                                    self.PostsData.append(CurrentPost)
-                                    completion()
-                                }
+                            if let imageData = imageData {
+                                
+                                let CurrentPost: Post = Post(id: postId, title: postTitle, place: postPlace, image: imageData, author: postAuthor, description: postDescription, likesCount: postLikesCount, usersLiked: postUsersLiked)
+                                self.PostsData.append(CurrentPost)
+                                completion()
+                                
+                            } else {
+                                print("Failed to retrieve image data")
+                                let CurrentPost: Post = Post(id: postId, title: postTitle, place: postPlace, image: nil, author: postAuthor, description: postDescription, likesCount: postLikesCount, usersLiked: postUsersLiked)
+                                self.PostsData.append(CurrentPost)
+                                completion()
                             }
                         }
+                    }
                     
                 } else {
                     print("Не удалось распарсить JSON ответ как массив словарей.")

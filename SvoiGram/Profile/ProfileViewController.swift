@@ -339,7 +339,6 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
                                 completion()
                             }
                         }
-                        
                     }
                     
                 } else {

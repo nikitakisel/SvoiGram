@@ -318,6 +318,11 @@ class NewsTableViewCell: UITableViewCell {
                         completion()
                     }
                     
+                    if self.PostComments.count == 0 {
+                        self.PostComments.append(Comment(id: -1, userName: "Упс", userComment: "Нет комментариев"))
+                        completion()
+                    }
+                    
                 } else {
                    print("Comments not found in JSON response or invalid base64 string.")
                    completion()
