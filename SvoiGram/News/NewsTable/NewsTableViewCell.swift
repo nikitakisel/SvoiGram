@@ -34,6 +34,7 @@ class NewsTableViewCell: UITableViewCell {
     private var userNickName: String = ""
     private var isLiked: Bool = false
     private var PostComments: [Comment] = []
+    weak var emptyCommentDelegate: EmptyCommentDelegate?
     
     @IBOutlet private weak var postTitle: UILabel!
     @IBOutlet private weak var postPlace: UILabel!
@@ -77,9 +78,9 @@ class NewsTableViewCell: UITableViewCell {
         self.postDescription.text = postDescription
         self.postLikesCount.text = "\(postLikesCount)"
         
-        updateComments()
+        self.updateComments()
         displayBase64Image(imageData: postImage, imageView: self.postImage)
-        getUserName(token: getToken(), usersLiked: postUsersLiked)
+        self.getUserName(token: getToken(), usersLiked: postUsersLiked)
     }
     
     func updateComments() {
@@ -101,10 +102,7 @@ class NewsTableViewCell: UITableViewCell {
     @IBAction func addCommentButtonPressed(_ sender: UIButton) {
         
         guard let comment = self.commentLabel.text, !comment.isEmpty else {
-            DispatchQueue.main.async {
-                let alert = UIAlertController(title: "Ошибка", message: "Вы не ввели комментарий!", preferredStyle: .alert)
-                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-            }
+            self.emptyCommentDelegate?.alertFromEmptyComment()
             return
         }
         self.addComment(token: getToken(), comment: self.commentLabel.text!)
@@ -317,6 +315,11 @@ class NewsTableViewCell: UITableViewCell {
                         
                         let newComment: Comment = Comment(id: commentId, userName: commentUsername, userComment: commentValue)
                         self.PostComments.append(newComment)
+                        completion()
+                    }
+                    
+                    if self.PostComments.count == 0 {
+                        self.PostComments.append(Comment(id: -1, userName: "Упс", userComment: "Нет комментариев"))
                         completion()
                     }
                     

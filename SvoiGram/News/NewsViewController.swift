@@ -42,13 +42,16 @@ protocol ProfileViewControllerDelegate: AnyObject {
     func profileDidDismiss()
 }
 
-class NewsViewController: UIViewController, ProfileViewControllerDelegate, UpdatePostTableDelegate, UpdateCommentsDelegate {
+protocol EmptyCommentDelegate: AnyObject {
+    func alertFromEmptyComment()
+}
+
+class NewsViewController: UIViewController, ProfileViewControllerDelegate, UpdatePostTableDelegate, UpdateCommentsDelegate, EmptyCommentDelegate {
     
     @IBOutlet weak var profileButton: UIButton!
-    
     @IBOutlet weak var quitButton: UIButton!
-    
     @IBOutlet weak var newsTable: UITableView!
+    
     var userToken = getToken()
     var PostsData: [Post] = []
     
@@ -91,6 +94,14 @@ class NewsViewController: UIViewController, ProfileViewControllerDelegate, Updat
     func updateNewsCommentsTable() {
         self.updatePostTable()
     }
+    
+    func alertFromEmptyComment() {
+        DispatchQueue.main.async {
+            let alert = UIAlertController(title: "Ошибка", message: "Вы не ввели комментарий!", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
 
     @IBAction func profileButtonPressed(_ sender: UIButton) {
 
@@ -113,13 +124,13 @@ class NewsViewController: UIViewController, ProfileViewControllerDelegate, Updat
     @IBAction func quitButtonPressed(_ sender: UIButton) {
         let alert = UIAlertController(title: "Выход", message: "Вы уверены, что хотите выйти?", preferredStyle: .alert)
 
-            alert.addAction(UIAlertAction(title: "Да", style: .default, handler: { [weak self] _ in
-                self?.dismiss(animated: true, completion: nil)
-            }))
+        alert.addAction(UIAlertAction(title: "Да", style: .default, handler: { [weak self] _ in
+            self?.dismiss(animated: true, completion: nil)
+        }))
 
-            alert.addAction(UIAlertAction(title: "Нет", style: .cancel, handler: nil))
+        alert.addAction(UIAlertAction(title: "Нет", style: .cancel, handler: nil))
 
-            present(alert, animated: true, completion: nil)
+        self.present(alert, animated: true, completion: nil)
     }
     
     func fetchData(token: String, completion: @escaping () -> Void) {
@@ -170,20 +181,20 @@ class NewsViewController: UIViewController, ProfileViewControllerDelegate, Updat
                         }
                         
                         getImageData(token: self.userToken, url: "http://localhost:8080/api/image/\(postId)/image") { imageData in
-                                if let imageData = imageData {
-                                    
-                                    let CurrentPost: Post = Post(id: postId, title: postTitle, place: postPlace, image: imageData, author: postAuthor, description: postDescription, likesCount: postLikesCount, usersLiked: postUsersLiked)
-                                    self.PostsData.append(CurrentPost)
-                                    completion()
-                                    
-                                } else {
-                                    print("Failed to retrieve image data")
-                                    let CurrentPost: Post = Post(id: postId, title: postTitle, place: postPlace, image: nil, author: postAuthor, description: postDescription, likesCount: postLikesCount, usersLiked: postUsersLiked)
-                                    self.PostsData.append(CurrentPost)
-                                    completion()
-                                }
+                            if let imageData = imageData {
+                                
+                                let CurrentPost: Post = Post(id: postId, title: postTitle, place: postPlace, image: imageData, author: postAuthor, description: postDescription, likesCount: postLikesCount, usersLiked: postUsersLiked)
+                                self.PostsData.append(CurrentPost)
+                                completion()
+                                
+                            } else {
+                                print("Failed to retrieve image data")
+                                let CurrentPost: Post = Post(id: postId, title: postTitle, place: postPlace, image: nil, author: postAuthor, description: postDescription, likesCount: postLikesCount, usersLiked: postUsersLiked)
+                                self.PostsData.append(CurrentPost)
+                                completion()
                             }
                         }
+                    }
                     
                 } else {
                     print("Не удалось распарсить JSON ответ как массив словарей.")
@@ -215,6 +226,7 @@ extension NewsViewController: UITableViewDataSource {
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "NewsTableViewCell", for: indexPath) as! NewsTableViewCell
+        cell.emptyCommentDelegate = self
 
         cell.configure(postId: PostsData[indexPath.row].id, postTitle: PostsData[indexPath.row].title, postPlace: PostsData[indexPath.row].place, postImage: PostsData[indexPath.row].image, postAuthor: PostsData[indexPath.row].author, postDescription: PostsData[indexPath.row].description, postLikesCount: PostsData[indexPath.row].likesCount, postUsersLiked: PostsData[indexPath.row].usersLiked)
 
