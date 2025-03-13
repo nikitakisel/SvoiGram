@@ -78,9 +78,9 @@ class NewsTableViewCell: UITableViewCell {
         self.postDescription.text = postDescription
         self.postLikesCount.text = "\(postLikesCount)"
         
-        self.updateComments()
         displayBase64Image(imageData: postImage, imageView: self.postImage)
         self.getUserName(token: getToken(), usersLiked: postUsersLiked)
+        self.updateComments()
     }
     
     func updateComments() {
@@ -259,6 +259,8 @@ class NewsTableViewCell: UITableViewCell {
                             self.userNickName = userNickName
                             if usersLiked.contains(self.userNickName) {
                                 self.addLike()
+                            } else {
+                                self.deleteLike()
                             }
                         }
                         
@@ -315,13 +317,8 @@ class NewsTableViewCell: UITableViewCell {
                         
                         let newComment: Comment = Comment(id: commentId, userName: commentUsername, userComment: commentValue)
                         self.PostComments.append(newComment)
-                        completion()
                     }
-                    
-                    if self.PostComments.count == 0 {
-                        self.PostComments.append(Comment(id: -1, userName: "Упс", userComment: "Нет комментариев"))
-                        completion()
-                    }
+                    completion()
                     
                 } else {
                    print("Comments not found in JSON response or invalid base64 string.")

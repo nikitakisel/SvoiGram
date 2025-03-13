@@ -56,9 +56,9 @@ class ProfileTableViewCell: UITableViewCell, DeleteCommentDelegate, UpdateCommen
 //        self.postImage.cgImage = postImage
         self.postDescription.text = postDescription
         
-        self.updateComments()
         displayBase64Image(imageData: postImage, imageView: self.postImage)
         self.postLikesCount.text = "\(postLikesCount)"
+        self.updateComments()
     }
     
     func updateComments() {
@@ -121,14 +121,9 @@ class ProfileTableViewCell: UITableViewCell, DeleteCommentDelegate, UpdateCommen
                         
                         let newComment: Comment = Comment(id: commentId, userName: commentUsername, userComment: commentValue)
                         self.PostComments.append(newComment)
-                        completion()
                     }
-                    
-                    if self.PostComments.count == 0 {
-                        self.PostComments.append(Comment(id: -1, userName: "Упс", userComment: "Нет комментариев"))
-                        completion()
-                    }
-                    
+                    completion()
+
                 } else {
                    print("Comments not found in JSON response or invalid base64 string.")
                    completion()

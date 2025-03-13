@@ -196,6 +196,10 @@ class NewsViewController: UIViewController, ProfileViewControllerDelegate, Updat
                         }
                     }
                     
+                    if jsonArray.count == 0 {
+                        completion()
+                    }
+                    
                 } else {
                     print("Не удалось распарсить JSON ответ как массив словарей.")
                     completion()
