@@ -6,8 +6,11 @@ SvoiGram
 2. Соберите Docker-образ API для ПО. Зайдите в терминал, перейдите в папку, где будете хранить проект, и пропишите следующие команды:
 
 $ git clone https://github.com/maksim25y/InstagramApp
+
 $ cd InstagramApp
+
 $ cd demo
+
 $ docker-compose up --build 
 
 4. Склонируйте репозиторий iOS-приложения
