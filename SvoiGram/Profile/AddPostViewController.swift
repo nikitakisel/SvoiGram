@@ -45,13 +45,9 @@ class AddPostViewController: UIViewController, UIImagePickerControllerDelegate, 
         present(imagePickerController, animated: true, completion: nil)
     }
     
-    
-    //AAAAAAAAAAAAAAAA
     @IBAction func addPostButtonPressed(_ sender: UIButton) {
         addPost(token: getToken())
-
     }
-    //AAAAAAAAAAAAAAAA
     
     func addPost(token: String) {
         guard let postTitle = postTitleTextField.text, !postTitle.isEmpty,
