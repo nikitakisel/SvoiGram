@@ -105,11 +105,7 @@ class ViewController: UIViewController {
         guard let username = loginTextField.text, !username.isEmpty,
               let password = passwordTextField.text, !password.isEmpty else {
             print("Email and password cannot be empty.")
-            DispatchQueue.main.async {
-                let alert = UIAlertController(title: "Ошибка", message: "Вы заполнили не все поля!", preferredStyle: .alert)
-                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-                self.present(alert, animated: true, completion: nil)
-            }
+            self.alert(message: "Вы заполнили не все поля!")
             return
         }
 
@@ -140,6 +136,7 @@ class ViewController: UIViewController {
         let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
             if let error = error {
                 print("Error with POST request: \(error)")
+                self.alert(message: "Отсутствует подключение к Интернету!")
                 return
             }
 
@@ -150,12 +147,7 @@ class ViewController: UIViewController {
                 if let data = data, let responseString = String(data: data, encoding: .utf8) {
                     print("Response: \(responseString)")
                 }
-                
-                DispatchQueue.main.async {
-                    let alert = UIAlertController(title: "Ошибка", message: "Введён некорректный логин или пароль", preferredStyle: .alert)
-                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-                    self.present(alert, animated: true, completion: nil)
-                }
+                self.alert(message: "Введён некорректный логин или пароль")
                 return
             }
 
@@ -180,12 +172,9 @@ class ViewController: UIViewController {
                     alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
                         let sb = UIStoryboard(name: "Main", bundle: nil)
                         let newsVC = sb.instantiateViewController(identifier: "NewsViewController")
-
                         self.show(newsVC, sender: self)
-
                     }))
                     self.present(alert, animated: true, completion: nil)
-                    
                     self.clearForm()
                 }
             }
@@ -194,6 +183,13 @@ class ViewController: UIViewController {
         task.resume()
     }
     
+    func alert(message: String) {
+        DispatchQueue.main.async {
+            let alert = UIAlertController(title: "Ошибка", message: message, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
     
     @IBAction func registrationButtonPressed(_ sender: UIButton) {
         self.clearForm()
